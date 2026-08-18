@@ -1,4 +1,4 @@
-import { POKEMON_TYPES } from '../types/pokemon';
+import { POKEMON_TYPES } from '../constants';
 
 interface TypeFilterProps {
   value: string | null;

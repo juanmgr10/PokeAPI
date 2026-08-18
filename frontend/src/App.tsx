@@ -3,19 +3,16 @@ import type {
   Pokemon,
   PokemonListItem,
   EvolutionNode,
-} from './types/pokemon';
-import {
-  PAGE_SIZE,
-  TOTAL_POKEMON,
-  capitalize,
-} from './types/pokemon';
+} from '@pokedex/backend';
 import {
   fetchPokemonPage,
   fetchPokemonByType,
   fetchPokemonDetails,
   fetchPokemon,
   fetchEvolutionChain,
-} from './services/pokeApi';
+} from '@pokedex/backend';
+import { PAGE_SIZE, TOTAL_POKEMON } from './constants';
+import { capitalize } from './utils/format';
 import { useDebounce } from './hooks/useDebounce';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { SearchBar } from './components/SearchBar';

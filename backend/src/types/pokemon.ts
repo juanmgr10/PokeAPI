@@ -1,5 +1,8 @@
 // ============================================================
 // TypeScript interfaces para la PokéAPI
+// ------------------------------------------------------------
+// Definen el CONTRATO de datos del módulo backend. El frontend
+// importa estos tipos desde `@pokedex/backend`.
 // ============================================================
 
 /** Item de la lista paginada de Pokémon (`/pokemon?limit=&offset=`). */
@@ -62,18 +65,16 @@ export interface PokemonSpecies {
   };
 }
 
-
 export interface EvolutionNode {
   species: {
     name: string;
     url: string;
   };
-  /** URL del sprite. La resuelve la capa de servicios, no los componentes. */
+  /** URL del sprite. La resuelve el backend (capa de servicios), no los componentes. */
   sprite: string | null;
   evolves_to: EvolutionNode[];
   evolution_details: EvolutionDetail[];
 }
-
 
 export interface EvolutionDetail {
   min_level: number | null;
@@ -99,42 +100,3 @@ export interface TypeResponse {
     pokemon: PokemonListItem;
   }>;
 }
-
-
-
-
-export const POKEAPI_BASE = 'https://pokeapi.co/api/v2';
-export const PAGE_SIZE = 20;
-export const TOTAL_POKEMON = 1025;
-
-
-export const POKEMON_TYPES = [
-  'normal',
-  'fire',
-  'water',
-  'electric',
-  'grass',
-  'ice',
-  'fighting',
-  'poison',
-  'ground',
-  'flying',
-  'psychic',
-  'bug',
-  'rock',
-  'ghost',
-  'dragon',
-  'dark',
-  'steel',
-  'fairy',
-] as const;
-
-export type PokemonTypeName = (typeof POKEMON_TYPES)[number];
-
-/** Utilidad para capitalizar la primera letra de una cadena. */
-export const capitalize = (s: string): string =>
-  s.charAt(0).toUpperCase() + s.slice(1);
-
-/** Formatea un ID como número de Pokédex (ej. 25 -> #025). */
-export const formatId = (id: number): string =>
-  `#${String(id).padStart(3, '0')}`;

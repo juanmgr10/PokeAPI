@@ -1,5 +1,5 @@
-import type { EvolutionNode } from '../types/pokemon';
-import { capitalize } from '../types/pokemon';
+import type { EvolutionNode } from '@pokedex/backend';
+import { capitalize } from '../utils/format';
 
 interface EvolutionChainProps {
   chain: EvolutionNode;

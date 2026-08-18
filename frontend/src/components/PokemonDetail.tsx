@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { EvolutionNode, Pokemon } from '../types/pokemon';
-import { capitalize, formatId } from '../types/pokemon';
+import type { EvolutionNode, Pokemon } from '@pokedex/backend';
+import { capitalize, formatId } from '../utils/format';
 import { getTypeColor } from '../utils/typeColors';
 import { EvolutionChain } from './EvolutionChain';
 import { LoadingSpinner } from './LoadingSpinner';

@@ -1,22 +1,10 @@
-// ============================================================
-// CAPA DE SERVICIOS — "backend" de la aplicación
-// ------------------------------------------------------------
-// Aquí vive TODA la lógica de acceso a la PokéAPI:
-// construcción de URLs, verificación de respuestas (res.ok)
-// y manejo de errores.
-//
-// Los componentes NUNCA llaman a fetch() ni validan endpoints.
-// Solo consumen estas funciones y muestran el response ya
-// verificado.
-// ============================================================
-
 import type {
   EvolutionNode,
   Pokemon,
   PokemonListItem,
   TypeResponse,
-} from '../types/pokemon';
-import { POKEAPI_BASE } from '../types/pokemon';
+} from './types/pokemon';
+import { POKEAPI_BASE } from './config';
 
 /**
  * GET genérico: hace la petición, verifica que el endpoint
@@ -30,9 +18,6 @@ async function getJson<T>(url: string, errorMessage: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-// ============================================================
-// Endpoints
-// ============================================================
 
 /** GET /pokemon?limit=&offset= — lista paginada de Pokémon. */
 export async function fetchPokemonPage(

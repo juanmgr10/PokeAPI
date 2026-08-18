@@ -1,5 +1,5 @@
-import type { Pokemon } from '../types/pokemon';
-import { capitalize, formatId } from '../types/pokemon';
+import type { Pokemon } from '@pokedex/backend';
+import { capitalize, formatId } from '../utils/format';
 import { getTypeColor } from '../utils/typeColors';
 
 interface PokemonCardProps {

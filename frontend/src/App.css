@@ -200,9 +200,11 @@ body {
 }
 
 /* ---------------- Grid ---------------- */
+/* 4 columnas fijas: 20 ítems por página = 5 filas exactas,
+   bloque compacto sin celdas vacías ni espacios en blanco. */
 .pokemon-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
