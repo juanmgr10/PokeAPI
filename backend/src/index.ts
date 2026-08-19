@@ -10,6 +10,9 @@ export {
 
 export { POKEAPI_BASE } from './config';
 
+export { login, logout } from './auth';
+export type { AuthCredentials, AuthSession } from './auth';
+
 export type {
   EvolutionChain,
   EvolutionDetail,

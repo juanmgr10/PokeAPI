@@ -3,6 +3,7 @@ import type {
   Pokemon,
   PokemonListItem,
   EvolutionNode,
+  AuthSession,
 } from '@pokedex/backend';
 import {
   fetchPokemonPage,
@@ -10,12 +11,14 @@ import {
   fetchPokemonDetails,
   fetchPokemon,
   fetchEvolutionChain,
+  logout,
 } from '@pokedex/backend';
 import { PAGE_SIZE, TOTAL_POKEMON } from './constants';
 import { capitalize } from './utils/format';
 import { useDebounce } from './hooks/useDebounce';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { SearchBar } from './components/SearchBar';
+import { Login } from './components/Login';
 import { PokemonGrid } from './components/PokemonGrid';
 import { PokemonDetail } from './components/PokemonDetail';
 import { TypeFilter } from './components/TypeFilter';
@@ -59,6 +62,12 @@ function App() {
   );
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
+  // ---------------- Sesión (login vía FastAPI) ----------------
+  const [session, setSession] = useLocalStorage<AuthSession | null>(
+    'pokedex-auth',
+    null
+  );
+
   // ---------------- Comparador ----------------
   const [compareList, setCompareList] = useState<Pokemon[]>([]);
 
@@ -74,6 +83,7 @@ function App() {
   // ============================================================
   useEffect(() => {
     // La búsqueda y el modo Gen 1 tienen su propia lógica.
+    if (!session) return;
     if (searchActive || gen1Loaded) return;
 
     let cancelled = false;
@@ -113,14 +123,14 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [offset, selectedType, gen1Loaded, searchActive]);
+  }, [offset, selectedType, gen1Loaded, searchActive, session]);
 
   // ============================================================
   // Búsqueda: se dispara con el valor ya "debounceado".
   // Si existe -> detalle. Si no -> mensaje de error claro.
   // ============================================================
   useEffect(() => {
-    if (!searchActive) {
+    if (!session || !searchActive) {
       setSearchError(null);
       setSearchLoading(false);
       return;
@@ -151,13 +161,14 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery, searchActive]);
+  }, [debouncedQuery, searchActive, session]);
 
   // ============================================================
   // Evoluciones: al cambiar el Pokémon seleccionado, se consulta
   // /pokemon-species/{id} -> /evolution-chain/{id}
   // ============================================================
   useEffect(() => {
+    if (!session) return;
     // Capturamos el Pokémon en una constante para preservar el
     // narrowing de tipo dentro de la clausura asíncrona.
     const current = selectedPokemon;
@@ -186,13 +197,14 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [selectedPokemon]);
+  }, [selectedPokemon, session]);
 
   // ============================================================
   // "Cargar Gen 1": carga los 151 Pokémon originales con Promise.all
   // (peticiones simultáneas, nunca secuenciales en un bucle for).
   // ============================================================
   const loadGen1 = useCallback(async () => {
+    if (!session) return;
     setIsGen1Loading(true);
     setListError(null);
     setGen1Loaded(false);
@@ -212,7 +224,7 @@ function App() {
     } finally {
       setIsGen1Loading(false);
     }
-  }, []);
+  }, [session]);
 
   // ============================================================
   // Handlers
@@ -271,6 +283,14 @@ function App() {
     setCompareList([]);
   }, []);
 
+  const handleLogout = useCallback(() => {
+    if (session) {
+      // Avisamos al servidor; si está caído, cerramos la sesión local igual.
+      logout(session.token).catch(() => {});
+    }
+    setSession(null);
+  }, [session, setSession]);
+
   // ============================================================
   // Render
   // ============================================================
@@ -284,9 +304,20 @@ function App() {
   const hasNextPage =
     !gen1Loaded && !showFavoritesOnly && currentPage < pageCount;
 
+  // Login obligatorio: sin sesión solo se muestra la pantalla de login.
+  if (!session) {
+    return <Login onSuccess={setSession} />;
+  }
+
   return (
     <div className="app">
       <header className="app-header">
+        <div className="auth-bar">
+          <span className="auth-user">👤 {capitalize(session.username)}</span>
+          <button className="btn btn-small" onClick={handleLogout}>
+            Cerrar sesión
+          </button>
+        </div>
         <h1>🎮 Pokédex</h1>
         <p className="subtitle">
           Explora, busca y compara Pokémon de la PokéAPI
