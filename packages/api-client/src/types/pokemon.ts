@@ -1,8 +1,8 @@
 // ============================================================
 // TypeScript interfaces para la PokéAPI
 // ------------------------------------------------------------
-// Definen el CONTRATO de datos del módulo backend. El frontend
-// importa estos tipos desde `@pokedex/backend`.
+// Definen el CONTRATO de datos del cliente de API. El frontend
+// importa estos tipos desde `@pokedex/api-client`.
 // ============================================================
 
 /** Item de la lista paginada de Pokémon (`/pokemon?limit=&offset=`). */

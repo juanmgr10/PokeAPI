@@ -1,4 +1,4 @@
-import type { Pokemon } from '@pokedex/backend';
+import type { Pokemon } from '@pokedex/api-client';
 import { PokemonCard } from './PokemonCard';
 
 interface PokemonGridProps {

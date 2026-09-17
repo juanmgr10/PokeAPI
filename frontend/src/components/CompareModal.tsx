@@ -1,4 +1,4 @@
-import type { Pokemon } from '@pokedex/backend';
+import type { Pokemon } from '@pokedex/api-client';
 import { capitalize, formatId } from '../utils/format';
 import { getTypeColor } from '../utils/typeColors';
 

@@ -5,7 +5,7 @@
   "type": "module",
   "workspaces": [
     "frontend",
-    "backend"
+    "packages/api-client"
   ],
   "scripts": {
     "dev": "npm run dev -w frontend",

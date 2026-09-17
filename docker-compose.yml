@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pokedex}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pokedex}
+      POSTGRES_DB: ${POSTGRES_DB:-pokedex}
+    ports:
+      # Puerto del host configurable: evita choques con un Postgres local
+      # que ya esté escuchando en 5432.
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pokedex} -d ${POSTGRES_DB:-pokedex}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-pokedex}:${POSTGRES_PASSWORD:-pokedex}@db:5432/${POSTGRES_DB:-pokedex}
+      SEED_DEMO_USERS: ${SEED_DEMO_USERS:-true}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    command: ["--reload"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

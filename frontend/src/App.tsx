@@ -4,7 +4,7 @@ import type {
   PokemonListItem,
   EvolutionNode,
   AuthSession,
-} from '@pokedex/backend';
+} from '@pokedex/api-client';
 import {
   fetchPokemonPage,
   fetchPokemonByType,
@@ -12,7 +12,10 @@ import {
   fetchPokemon,
   fetchEvolutionChain,
   logout,
-} from '@pokedex/backend';
+  getFavorites,
+  addFavorite,
+  removeFavorite,
+} from '@pokedex/api-client';
 import { PAGE_SIZE, TOTAL_POKEMON } from './constants';
 import { capitalize } from './utils/format';
 import { useDebounce } from './hooks/useDebounce';
@@ -30,6 +33,9 @@ import { CompareModal } from './components/CompareModal';
 type View = 'grid' | 'detail' | 'compare';
 
 const SEARCH_DELAY_MS = 500;
+
+/** Clave de localStorage usada antes de que los favoritos vivieran en el servidor. */
+const LEGACY_FAVORITES_KEY = 'pokedex-favorites';
 
 function App() {
   // ---------------- Vista principal ----------------
@@ -55,17 +61,22 @@ function App() {
   // ---------------- Filtro por tipo ----------------
   const [selectedType, setSelectedType] = useState<string | null>(null);
 
-  // ---------------- Favoritos (persistidos en localStorage) ----------------
-  const [favorites, setFavorites] = useLocalStorage<number[]>(
-    'pokedex-favorites',
-    []
-  );
+  // ---------------- Favoritos (persistidos en el servidor, por usuario) ----------------
+  const [favorites, setFavorites] = useState<number[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   // ---------------- Sesión (login vía FastAPI) ----------------
   const [session, setSession] = useLocalStorage<AuthSession | null>(
     'pokedex-auth',
     null
+  );
+
+  // ---------------- Favoritos heredados de localStorage ----------------
+  // Versión previa a la base de datos: solo se usa una vez para migrar
+  // al servidor, nunca como fuente de verdad.
+  const [legacyFavorites, , clearLegacyFavorites] = useLocalStorage<number[]>(
+    LEGACY_FAVORITES_KEY,
+    []
   );
 
   // ---------------- Comparador ----------------
@@ -200,6 +211,45 @@ function App() {
   }, [selectedPokemon, session]);
 
   // ============================================================
+  // Favoritos: al iniciar sesión, se cargan desde el servidor.
+  // Si quedaban favoritos de la versión anterior (localStorage),
+  // se suben una sola vez y se limpia la clave heredada.
+  // ============================================================
+  useEffect(() => {
+    if (!session) {
+      setFavorites([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadFavorites() {
+      try {
+        if (legacyFavorites.length > 0) {
+          for (const pokemonId of legacyFavorites) {
+            await addFavorite(session!.token, pokemonId);
+          }
+          clearLegacyFavorites();
+        }
+        const ids = await getFavorites(session!.token);
+        if (!cancelled) setFavorites(ids);
+      } catch {
+        // Si el token quedó inválido (p. ej. el servidor se reinició),
+        // volvemos a la pantalla de login.
+        if (!cancelled) setSession(null);
+      }
+    }
+
+    loadFavorites();
+    return () => {
+      cancelled = true;
+    };
+    // legacyFavorites/clearLegacyFavorites solo importan en el primer
+    // login; no deben re-disparar la carga en cada render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
+
+  // ============================================================
   // "Cargar Gen 1": carga los 151 Pokémon originales con Promise.all
   // (peticiones simultáneas, nunca secuenciales en un bucle for).
   // ============================================================
@@ -258,13 +308,29 @@ function App() {
 
   const toggleFavorite = useCallback(
     (pokemon: Pokemon) => {
+      if (!session) return;
+      const isFavorite = favorites.includes(pokemon.id);
+
+      // Optimista: refleja el cambio ya mismo y lo revierte si falla.
       setFavorites((prev) =>
-        prev.includes(pokemon.id)
+        isFavorite
           ? prev.filter((id) => id !== pokemon.id)
           : [...prev, pokemon.id]
       );
+
+      const request = isFavorite
+        ? removeFavorite(session.token, pokemon.id)
+        : addFavorite(session.token, pokemon.id);
+
+      request.catch(() => {
+        setFavorites((prev) =>
+          isFavorite
+            ? [...prev, pokemon.id]
+            : prev.filter((id) => id !== pokemon.id)
+        );
+      });
     },
-    [setFavorites]
+    [session, favorites]
   );
 
   const handleAddToCompare = useCallback((pokemon: Pokemon) => {

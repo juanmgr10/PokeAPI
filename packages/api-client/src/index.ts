@@ -10,8 +10,10 @@ export {
 
 export { POKEAPI_BASE } from './config';
 
-export { login, logout } from './auth';
+export { login, register, logout } from './auth';
 export type { AuthCredentials, AuthSession } from './auth';
+
+export { getFavorites, addFavorite, removeFavorite } from './favorites';
 
 export type {
   EvolutionChain,

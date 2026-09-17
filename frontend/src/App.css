@@ -834,6 +834,22 @@ body {
   text-align: center;
 }
 
+.login-toggle {
+  display: block;
+  margin: 16px auto 0;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.login-toggle:hover {
+  text-decoration: underline;
+}
+
 .login-hint {
   margin-top: 18px;
   color: var(--text-muted);

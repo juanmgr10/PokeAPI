@@ -1,4 +1,4 @@
-import type { EvolutionNode } from '@pokedex/backend';
+import type { EvolutionNode } from '@pokedex/api-client';
 import { capitalize } from '../utils/format';
 
 interface EvolutionChainProps {

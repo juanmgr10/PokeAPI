@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { EvolutionNode, Pokemon } from '@pokedex/backend';
+import type { EvolutionNode, Pokemon } from '@pokedex/api-client';
 import { capitalize, formatId } from '../utils/format';
 import { getTypeColor } from '../utils/typeColors';
 import { EvolutionChain } from './EvolutionChain';
